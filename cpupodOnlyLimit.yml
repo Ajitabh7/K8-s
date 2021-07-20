@@ -1,0 +1,11 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: default-cpu-demo-only-limit
+spec:
+  containers:
+    - name: default-cpu-demo-cntnr-only-limit
+      image: nginx
+      resources:
+        limits:
+          cpu: "1"

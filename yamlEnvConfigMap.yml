@@ -1,0 +1,15 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: yamlenvconfig
+spec:
+  containers:
+    - name: c20
+      image: centos
+      command: ["/bin/bash", "-c","while true;do echo Hello ConfigMap;sleep 3;done"]
+      env:
+        - name: MYENV
+          valueFrom:
+            configMapKeyRef:
+              name: myyamlmap
+              key: TOPIC

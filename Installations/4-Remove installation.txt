@@ -1,0 +1,11 @@
+-----------------------
+## START - Only if you have tried k8s installation today##
+docker stop $(docker ps -aq)
+docker rm -f $(docker ps -aq)
+docker rmi $(docker images -q)
+kubeadm reset 
+yum remove kubeadm kubectl kubelet   
+yum autoremove 
+rm -rf ~/.kube
+yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-selinux docker-engine-selinux Docker-engine -y
+## END- Only if you have tried k8s installation today##

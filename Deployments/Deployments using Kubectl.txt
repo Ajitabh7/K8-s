@@ -1,0 +1,111 @@
+Deployment through Kubernetes
+=============================
+export https_proxy=10.7.199.135:8080
+yum install wget -y 
+wget https://k8s.io/examples/controllers/nginx-deployment.yaml
+
+ls -lrt
+
+cat nginx-deployment.yaml
+
+kubectl apply -f nginx-deployment.yaml
+
+--Check status of deployment
+kubectl rollout status deployment.v1.apps/nginx-deployment
+kubectl get deployment
+
+--Check Replica Sets created by deployment
+kubectl get rs
+
+kubectl get pods --show-labels
+
+-Check nginx version
+docker images
+
+--Update version
+kubectl --record deployment.apps/nginx-deployment set image deployment.v1.apps/nginx-deployment nginx=nginx:1.16.1
+
+--Check how many images of nginx exists now
+docker images
+
+--Check pods
+kubectl get pods --show-labels
+
+
+kubectl get deployments
+
+--Check Image
+kubectl describe deployments nginx-deployment   
+
+--Check existing rs
+kubectl get rs
+
+================================================================================================================================
+
+-- Upgraded to incorrect version  
+kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.161 --record=true  
+
+kubectl rollout status deployment.v1.apps/nginx-deployment   
+
+kubectl get rs
+
+--ImagePullBackOff
+kubectl get pods 
+
+kubectl describe deployment                     
+
+--Any Progress?
+kubectl rollout status deployment.v1.apps/nginx-deployment
+
+kubectl get events
+
+--Find out history of deployments
+kubectl rollout history deployment.v1.apps/nginx-deployment
+
+kubectl rollout undo deployment.v1.apps/nginx-deployment --to-revision=2
+
+kubectl get deployments nginx-deployment
+kubectl describe deployments nginx-deployment
+=================================================================================================================================
+
+--Scale deployment
+kubectl scale deployment.v1.apps/nginx-deployment --replicas=10
+
+kubectl get rs
+
+kubectl get deployments
+
+kubectl get pods
+===================================================================================================================================
+
+--Pause and Resume
+
+kubectl get deployments
+
+--Delete deployment
+kubectl delete deployments nginx-deployment
+
+kubectl apply -f nginx-deployment.yaml
+
+kubectl get deployments
+
+--Pause deployment
+kubectl rollout pause deployment.v1.apps/nginx-deployment 
+
+--Find out history of deployments
+kubectl rollout history deployment.v1.apps/nginx-deployment
+	
+-- Roll out new version	
+kubectl set image deployment.v1.apps/nginx-deployment nginx=nginx:1.16.1 --record=true
+
+kubectl get deployments
+
+--History
+kubectl rollout history deployment.v1.apps/nginx-deployment
+
+--Resume deployment
+kubectl rollout resume deployment.v1.apps/nginx-deployment
+
+kubectl rollout history deployment.v1.apps/nginx-deployment
+kubectl get deployments
+kubectl describe deployment nginx-deployment

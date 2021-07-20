@@ -1,0 +1,29 @@
+execute pakageinstallation
+
+===================================================================
+while Setting the hostname for the node.
+hostnamectl set-hostname 'k8s-node'
+
+if token and certificate hash was not available get it from master
+#On k8s-master - you can get the token.
+kubeadm token list
+
+#If you need to generate a new token, perhaps the old one timed out/expired.
+kubeadm token create
+
+
+#On the master, you can find the ca cert hash.
+openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 -hex | sed 's/^.* //'
+
+Note The --control-plane flag tells kubeadm join to create a new control plane
+==============================================================================
+
+
+
+
+kubeadm join 10.7.158.149:6443 --token wve3s1.razcnkejikhtxil9 \
+    --discovery-token-ca-cert-hash sha256:5227ad9521446d4c080452918f72c1e8375e5ae97215ad74d6a620c72ae72be4
+
+	
+	
+# Move to k8s-master and add entry in host file for node as well

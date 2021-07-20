@@ -1,0 +1,51 @@
+execute pakageinstallation
+==============================================================================
+
+kubeadm init --pod-network-cidr=10.244.0.0/16 --service-cidr=10.244.0.0/12
+
+================================================================================
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 172.31.8.169:6443 --token lu19u3.aznjaog6xaa0xe37 \
+    --discovery-token-ca-cert-hash sha256:460ba0d01eee39499e320d31103d32697caa8a0a05dd06cccb0daebe52183c5d
+	
+	
+	COPY kubeadm join lines in some fie.
+=========================================================================================
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+#Installing the container networking interface plugin. We are using calico. we have flannel and weavenet which are similar.
+#Only on the master, download the yaml files for the pod network.
+export https_proxy=10.7.199.135:8080
+export http_proxy=10.7.199.135:8080
+wget  https://docs.projectcalico.org/manifests/calico.yaml
+
+#Look inside calico.yaml and find the network range CALICO_IPV4POOL_CIDR, adjust if needed.
+vi calico.yaml
+
+   - name: CALICO_IPV4POOL_CIDR
+     value: "10.244.0.0/16"
+
+export http_proxy=
+export https_proxy=
+systemctl  restart kubelet && systemctl enable kubelet
+
+kubectl apply -f calico.yml
+kubectl taint nodes k8s-master node-role.kubernetes.io/master-
+--By default master has a taint, a restriction which does not allow any pod to be scheduled.
+
+
+kubectl get nodes
+kubectl get pods --all-namespaces

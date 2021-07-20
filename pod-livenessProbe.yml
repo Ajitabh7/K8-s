@@ -1,0 +1,22 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  labels:
+    test: liveness
+  name: mylivenessprobe
+spec:
+  containers:
+   - name: liveness
+     image: ubuntu
+     args:
+     - /bin/sh
+     - -c
+     - touch /tmp/healthcheck;sleep 1000
+     livenessProbe:
+       exec:
+         command:
+           - cat
+           - /tmp/healthcheck
+       initialDelaySeconds: 5
+       periodSeconds: 5
+       timeoutSeconds: 30

@@ -1,0 +1,148 @@
+---- latest version at time of installation
+Kubernetes v1.21.2
+docker 20.10.7
+-----------------------
+
+export https_proxy=10.7.199.135:8080
+export http_proxy=10.7.199.135:8080
+
+swapoff -a
+#To make use of 100% resources allocated. If swap is on it will slow down things.
+
+
+#Setting the hostname for the master.
+hostnamectl set-hostname 'k8s-master'
+
+
+exec bash
+#getting in bash
+
+setenforce 0
+#setting the selinux enforce as 0
+
+sed -i --follow-symlinks 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux
+#disabling selinux
+
+cat /etc/sysconfig/selinux
+#checking if selinux is disabled
+
+yum install firewalld -y
+#installing firewalld to set up ports
+
+systemctl start firewalld
+systemctl enable firewalld
+systemctl status firewalld
+#starting and enabling firewalld and checking the status
+
+firewall-cmd --permanent --add-port=6443/tcp
+firewall-cmd --permanent --add-port=2379-2380/tcp
+firewall-cmd --permanent --add-port=10250/tcp
+firewall-cmd --permanent --add-port=10251/tcp
+firewall-cmd --permanent --add-port=10252/tcp
+firewall-cmd --permanent --add-port=10255/tcp
+firewall-cmd --reload
+#opening ports to be used and making them as permanent
+
+modprobe br_netfilter
+#Enabled bridge filter which inturn would enable stateful transparent firewall-cmd
+
+echo '1' > /proc/sys/net/bridge/bridge-nf-call-iptables
+#Bridged packets will traverse iptable rules. This will come handy during ingress and egress.
+#Ingress is traffic that originates outside the n/w and is inbound.
+#egress is traffic that originates inside the n/w and is outbound
+
+#get private IP
+ifconfig --refer to eth0 section
+vi /etc/hosts
+#Add <private ip> <nodename> <nodename>
+
+#defining the ip and nodename inside hosts file so that kube refers to this while kubeadm init happens
+
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
+        https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
+##Creating kubernetes repo file in local
+
+yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-selinux docker-engine-selinux Docker-engine -y
+#removing already existing packages of docker as kubernetes and docker has to be compatible with respect to versions.
+
+yum install -y yum-utils device-mapper-persistent-data lvm2
+#Maps physical volume to logical volume
+
+sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+#creates docker repo file in local
+
+----------------------------
+Steps needed on FIS Azure VM
+
+vi /etc/yum.repos.d/docker-ce.repo 
+
+change $releasever to 8
+
+
+From:
+[docker-ce-stable]
+name=Docker CE Stable - $basearch
+baseurl=https://download.docker.com/linux/centos/$releasever/$basearch/stable
+enabled=1
+gpgcheck=1
+gpgkey=https://download.docker.com/linux/centos/gpg
+
+
+TO:
+[docker-ce-stable]
+name=Docker CE Stable - $basearch
+baseurl=https://download.docker.com/linux/centos/8/$basearch/stable
+enabled=1
+gpgcheck=1
+gpgkey=https://download.docker.com/linux/centos/gpg
+
+-----------------------------------------------
+ 
+yum install -y docker-ce --nobest
+yum install -y kubelet kubeadm kubectl
+
+
+
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo systemctl status docker
+#starting, enabling and checking the status of docker.
+
+
+systemctl  restart kubelet && systemctl enable kubelet
+#restarting and enabling kubelet
+
+
+# Setup Docker daemon. 
+sudo bash -c 'cat > /etc/docker/daemon.json <<EOF
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m"
+  },
+  "storage-driver": "overlay2"
+}
+EOF'
+
+#Restart reload the systemd config and docker
+systemctl daemon-reload
+systemctl restart docker
+
+-- If there is no server in $kubectl version output
+sudo -i
+swapoff -a
+exit
+strace -eopenat kubectl version
+
+
+
+

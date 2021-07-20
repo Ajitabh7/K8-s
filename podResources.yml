@@ -1,0 +1,16 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: yamlenvconfig
+spec:
+  containers:
+    - name: c20
+      image: centos
+      command: ["/bin/bash", "-c","while true;do echo Hello Adam;sleep 3;done"]
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "100m"
+        limits:
+          memory: "128Mi"
+          cpu: "200m"

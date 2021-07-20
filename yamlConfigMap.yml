@@ -1,0 +1,8 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: myyamlmap
+  namespace: default
+data:
+  SKILL: DevOps
+  TOPIC: k8s

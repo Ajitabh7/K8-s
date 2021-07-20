@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: deployments
+spec:
+  replicas: 3
+  template:
+    metadata:
+      name: testpod50
+      labels:
+        onjtype: deployment
+    spec:
+      containers:
+       - name: c100
+         image: ubuntu
+         command: ["/bin/bash", "-c", "while true;do echo Hello Deployment;sleep 5;done"]
+         resources:
+           requests:
+             cpu: "200m"
